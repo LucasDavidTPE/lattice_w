@@ -32,6 +32,7 @@ mod fs_watch;
 mod fts;
 mod git;
 mod harper;
+mod host_paths;
 mod http;
 mod ipc;
 mod latex;
@@ -56,10 +57,17 @@ mod pdf_fonts;
 mod pdf_pages;
 #[cfg(feature = "perf-lab")]
 mod perf_lab;
+mod platform_fs;
+#[cfg(windows)]
+mod platform_windows;
 mod presentation;
 #[cfg(target_os = "macos")]
 mod process_inspector;
 mod project;
+#[cfg(unix)]
+mod project_fs;
+#[cfg(windows)]
+#[path = "project_fs_windows.rs"]
 mod project_fs;
 mod research_env;
 mod review_pdf;
@@ -85,6 +93,8 @@ mod traffic_lights;
 mod util;
 mod web_metadata;
 mod wide_event;
+#[cfg(all(test, windows))]
+mod windows_tests;
 #[cfg(target_os = "linux")]
 mod xlib_threads;
 
@@ -159,7 +169,7 @@ fn workspace_window(app: &AppHandle, label: &str, center: bool) -> tauri::Result
     let builder = WebviewWindowBuilder::new(app, label, tauri::WebviewUrl::default())
         .title(app.package_info().name.as_str())
         .inner_size(1440.0, 900.0)
-        .min_inner_size(640.0, 680.0)
+        .min_inner_size(640.0, if cfg!(windows) { 240.0 } else { 680.0 })
         .background_color(tauri::window::Color(0xF7, 0xF7, 0xF6, 0xFF))
         .on_new_window(|url, _| {
             if is_open_slide_presenter_url(&url) {
@@ -399,7 +409,7 @@ pub fn run() {
     // key). Not on Linux: the AppImage is released without an updater archive
     // and latest.json has no Linux entry, so Linux copies update by hand
     // (docs/release-process.md) and the frontend never checks there.
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(target_os = "macos")]
     let builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
     let app = builder
         .plugin(tauri_plugin_process::init())

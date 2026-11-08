@@ -6,7 +6,7 @@ use super::paths::{safe_path, NOT_FOUND};
 use crate::util::err;
 use std::fs::{self, File, Metadata, OpenOptions};
 use std::io;
-use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+
 use std::path::Path;
 
 /// Save the project PDF `relative`, at the `version` [`read_asset`] reported,
@@ -49,7 +49,7 @@ fn copy_checked_version(
     };
     let checked = |file: &File| -> Result<Metadata, String> {
         let metadata = file.metadata().map_err(err)?;
-        if !metadata.is_file() || file_version(&metadata) != version {
+        if !metadata.is_file() || file_version(file, &metadata).map_err(err)? != version {
             return Err(FILE_CHANGED.to_string());
         }
         Ok(metadata)
@@ -61,12 +61,14 @@ fn copy_checked_version(
         Err(error) => return Err(err(error)),
     };
     if let Some(existing) = &existing {
-        // Saved over itself, it already holds this version.
-        if existing.dev() == metadata.dev() && existing.ino() == metadata.ino() {
-            return saved_to;
-        }
         if !existing.is_file() {
             return Err("Choose a file to save the PDF to.".to_string());
+        }
+        // Saved over itself, it already holds this version.
+        if crate::platform_fs::path_identity(&destination).map_err(err)?
+            == crate::platform_fs::identity(&file).map_err(err)?
+        {
+            return saved_to;
         }
     }
 
@@ -98,12 +100,7 @@ impl StagedFile {
         let name =
             destination.file_name().map_or_else(Default::default, |name| name.to_string_lossy());
         let path = directory.join(format!(".{name}.{}.lattice-tmp", uuid::Uuid::new_v4().simple()));
-        let file = OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .custom_flags(libc::O_NOFOLLOW)
-            .open(&path)
-            .map_err(err)?;
+        let file = OpenOptions::new().write(true).create_new(true).open(&path).map_err(err)?;
         Ok(Self { path, file, committed: false })
     }
 

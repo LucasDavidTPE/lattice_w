@@ -59,6 +59,12 @@ impl PreambleFormat {
     /// latexmk hands the command to the shell, so the path is quoted.
     pub fn latexmk_arg(&self) -> String {
         let format = self.directory.join(JOB);
+        #[cfg(windows)]
+        return format!(
+            "-pdflatex=pdflatex -fmt=\"{}\" %O %S",
+            crate::host_paths::tex_path(&format)
+        );
+        #[cfg(not(windows))]
         format!("-pdflatex=pdflatex -fmt='{}' %O %S", format.display())
     }
 
