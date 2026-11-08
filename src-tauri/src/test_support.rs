@@ -76,3 +76,27 @@ pub(crate) fn sleep_command(seconds: u64) -> std::process::Command {
         command
     }
 }
+
+/// Liveness for a pid written by a child fixture, without Unix-only libc calls.
+pub(crate) fn process_alive(pid: u32) -> bool {
+    #[cfg(unix)]
+    {
+        i32::try_from(pid).is_ok_and(|pid| unsafe { libc::kill(pid, 0) } == 0)
+    }
+    #[cfg(windows)]
+    {
+        use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
+        use windows_sys::Win32::System::Threading::{
+            OpenProcess, WaitForSingleObject, PROCESS_SYNCHRONIZE,
+        };
+        let handle = unsafe { OpenProcess(PROCESS_SYNCHRONIZE, 0, pid) };
+        if handle.is_null() {
+            return false;
+        }
+        let handle = unsafe { OwnedHandle::from_raw_handle(handle) };
+        unsafe {
+            WaitForSingleObject(handle.as_raw_handle(), 0)
+                == windows_sys::Win32::Foundation::WAIT_TIMEOUT
+        }
+    }
+}

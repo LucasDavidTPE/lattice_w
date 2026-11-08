@@ -433,10 +433,9 @@ mod tests {
     }
 
     /// The process whose pid is in `pid_file` must be gone within two seconds.
-    #[cfg(unix)]
     fn assert_descendant_exits(pid_file: &std::path::Path, message: &str) {
-        let pid: i32 = fs::read_to_string(pid_file).unwrap().parse().unwrap();
-        let alive = || unsafe { libc::kill(pid, 0) } == 0;
+        let pid: u32 = fs::read_to_string(pid_file).unwrap().parse().unwrap();
+        let alive = || crate::test_support::process_alive(pid);
         let deadline = Instant::now() + Duration::from_secs(2);
         while alive() && Instant::now() < deadline {
             std::thread::sleep(Duration::from_millis(10));

@@ -63,7 +63,7 @@ const showManuscript = ({ controller, openFile }: ShowMeContext, line?: number) 
   }
 };
 
-export const GET_STARTED: readonly GetStartedStep[] = [
+const GET_STARTED: readonly GetStartedStep[] = [
   {
     id: "latex",
     title: msg`Install LaTeX`,

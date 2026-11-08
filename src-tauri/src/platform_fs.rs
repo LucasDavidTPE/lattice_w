@@ -55,7 +55,7 @@ pub(crate) fn open_resolved(path: &Path) -> io::Result<File> {
                 "Symbolic links cannot be used for project file operations.",
             ));
         }
-        return Ok(file);
+        Ok(file)
     }
     #[cfg(not(windows))]
     options.open(path)

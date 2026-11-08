@@ -236,6 +236,7 @@ pub enum AssetContent {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(unix)]
     use crate::project::pdf_copy::save_asset_copy;
     use crate::project::test_support::Fixture;
     use crate::project::tree::{read_file, scan_tree, TreeView};

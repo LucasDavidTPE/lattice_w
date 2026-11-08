@@ -46,7 +46,7 @@ it.each([["macOS", MACOS], ["Android", ANDROID]])("on %s, offers the update mode
 });
 
 
-it("on Windows, updates manually from the Windows fork", async () => {
+it("on Windows, links to official releases without enabling the macOS updater", async () => {
   await openAppUpdates("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/130.0.0.0 Safari/537.36");
   expect(screen.queryByRole("button", { name: "Check for updates" })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "GitHub Releases" }));
