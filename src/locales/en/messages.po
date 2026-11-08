@@ -4460,6 +4460,10 @@ msgstr "Could not start the live preview engine: {error}"
 msgid "Could not start: {message}"
 msgstr "Could not start: {message}"
 
+#: src/platform/host-errors-setup.ts
+msgid "Could not supervise the Windows terminal process tree."
+msgstr "Could not supervise the Windows terminal process tree."
+
 #: src/platform/host-errors-workspace.ts
 msgid "Could not unpack the rtex archive: {error}"
 msgstr "Could not unpack the rtex archive: {error}"

@@ -77,6 +77,7 @@ export const SETUP_HOST_ERRORS: readonly HostErrorEntry[] = [
   ["synara/bibliography_guard.rs", "The built-in agent is off on this platform until Lattice can keep it from editing bibliography (.bib) files directly.", () => t`The built-in agent is off on this platform until Lattice can keep it from editing bibliography (.bib) files directly.`],
 
   // The terminal (terminal.rs, terminal/caller.rs, ipc/terminal.rs)
+  ["terminal/windows.rs", "Could not supervise the Windows terminal process tree.", () => t`Could not supervise the Windows terminal process tree.`],
   ["terminal.rs", "This terminal has closed.", () => t`This terminal has closed.`],
   ["terminal/caller.rs", "The terminal is only available in a Lattice window.", () => t`The terminal is only available in a Lattice window.`],
 
