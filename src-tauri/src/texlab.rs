@@ -563,7 +563,14 @@ fn map_definition(result: Option<&Value>, root: &Path) -> Option<TexlabLocation>
     };
     let line = start("line")?;
     let column = start("character").unwrap_or(1);
-    let path = uri_to_path(uri)?
+    let path = uri_to_path(uri)?;
+    // File URLs use ordinary drive paths, while the session root may carry
+    // Windows' canonical verbatim prefix. Compare like path forms.
+    #[cfg(windows)]
+    let path = canonical(&path);
+    #[cfg(windows)]
+    let root = canonical(root);
+    let path = path
         .strip_prefix(root)
         .ok()
         .map(|value| value.to_string_lossy().replace('\\', "/"))
@@ -745,12 +752,15 @@ mod tests {
         })));
         assert_eq!(hover.unwrap().contents, "Package amsmath");
 
+        let paper = root.join("paper");
+        std::fs::create_dir_all(paper.join("sections")).unwrap();
+        std::fs::write(paper.join("sections/intro.tex"), "Introduction").unwrap();
         let location = map_definition(
             Some(&json!({
                 "uri": path_to_uri(&root.join("paper/sections/intro.tex")),
                 "range": { "start": { "line": 4, "character": 0 }, "end": { "line": 4, "character": 1 } }
             })),
-            &root.join("paper"),
+            &canonical(&paper),
         )
         .unwrap();
         assert_eq!(location.path, "sections/intro.tex");
