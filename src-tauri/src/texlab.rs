@@ -747,10 +747,10 @@ mod tests {
 
         let location = map_definition(
             Some(&json!({
-                "uri": "file:///tmp/paper/sections/intro.tex",
+                "uri": path_to_uri(&root.join("paper/sections/intro.tex")),
                 "range": { "start": { "line": 4, "character": 0 }, "end": { "line": 4, "character": 1 } }
             })),
-            Path::new("/tmp/paper"),
+            &root.join("paper"),
         )
         .unwrap();
         assert_eq!(location.path, "sections/intro.tex");
