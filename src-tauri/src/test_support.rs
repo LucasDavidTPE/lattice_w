@@ -60,3 +60,19 @@ pub(crate) fn symlink(original: impl AsRef<Path>, link: impl AsRef<Path>) -> std
         }
     }
 }
+
+/// An idle process owned by a lifecycle test, without relying on a Unix shell.
+pub(crate) fn sleep_command(seconds: u64) -> std::process::Command {
+    #[cfg(windows)]
+    {
+        let mut command = std::process::Command::new("powershell.exe");
+        command.args(["-NoProfile", "-Command", &format!("Start-Sleep -Seconds {seconds}")]);
+        command
+    }
+    #[cfg(unix)]
+    {
+        let mut command = std::process::Command::new("sleep");
+        command.arg(seconds.to_string());
+        command
+    }
+}

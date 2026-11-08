@@ -176,6 +176,8 @@ pub(crate) fn bibcite_output_cancellable(
     in_new_process_group(command);
 
     let mut child = command.spawn().map_err(|error| format!("could not start bibcite: {error}"))?;
+    let _process_group =
+        super::track_process_group(&mut child).map_err(|error| error.to_string())?;
     let deadline = Instant::now() + timeout;
     loop {
         let error = match child.try_wait() {

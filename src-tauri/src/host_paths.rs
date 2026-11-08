@@ -47,7 +47,7 @@ pub(crate) fn redact_home(text: &str, home: &str) -> String {
     } else {
         format!(r"\\?\{back}")
     };
-    let mut spellings = vec![
+    let mut spellings = [
         extended.replace('\\', r"\\"),
         extended,
         back.replace('\\', r"\\"),
