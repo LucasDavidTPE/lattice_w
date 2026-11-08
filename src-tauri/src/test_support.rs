@@ -43,3 +43,20 @@ impl Drop for TempDir {
         let _ = fs::remove_dir_all(&self.0);
     }
 }
+
+/// Create the same file or directory link on each host. Relative targets
+/// are interpreted beside the link, as the OS interprets them.
+pub(crate) fn symlink(original: impl AsRef<Path>, link: impl AsRef<Path>) -> std::io::Result<()> {
+    let (original, link) = (original.as_ref(), link.as_ref());
+    #[cfg(unix)]
+    return std::os::unix::fs::symlink(original, link);
+    #[cfg(windows)]
+    {
+        let target = link.parent().unwrap_or(Path::new(".")).join(original);
+        if target.is_dir() {
+            std::os::windows::fs::symlink_dir(original, link)
+        } else {
+            std::os::windows::fs::symlink_file(original, link)
+        }
+    }
+}

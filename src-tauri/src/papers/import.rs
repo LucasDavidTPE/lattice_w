@@ -451,6 +451,7 @@ fn merge_resolved_citation(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(unix)]
     use crate::commands;
     use crate::papers::library::{list_papers, read_paper, read_paper_blog_local};
     #[cfg(unix)]

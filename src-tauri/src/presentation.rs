@@ -844,6 +844,7 @@ Node.js v24.20.0\n";
 
     #[test]
     fn shadow_sync_does_not_walk_unrelated_project_directories() {
+        #[cfg(unix)]
         use std::os::unix::fs::PermissionsExt;
 
         let parent = crate::test_support::TempDir::new("presentation-shadow");
@@ -852,9 +853,11 @@ Node.js v24.20.0\n";
         let unrelated = source.join("large-paper-cache");
         parent.write("project/slides/talk/index.tsx", "export default [];\n");
         fs::create_dir_all(&unrelated).unwrap();
+        #[cfg(unix)]
         fs::set_permissions(&unrelated, fs::Permissions::from_mode(0o000)).unwrap();
 
         let result = synchronize(&source, &shadow);
+        #[cfg(unix)]
         fs::set_permissions(&unrelated, fs::Permissions::from_mode(0o700)).unwrap();
         // Only an existing directory is a presentation project.
         assert!(scoped_root(source.join("slides/talk/index.tsx").to_str().unwrap()).is_err());

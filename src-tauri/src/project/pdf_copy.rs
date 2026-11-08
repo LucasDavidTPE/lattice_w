@@ -155,7 +155,7 @@ mod tests {
         // Outside the project, through a link, or not a PDF.
         let outside = saved.join("outside.pdf");
         fs::write(&outside, b"%PDF-1.4 outside").unwrap();
-        std::os::unix::fs::symlink(&outside, fixture.path("linked.pdf")).unwrap();
+        crate::test_support::symlink(&outside, fixture.path("linked.pdf")).unwrap();
         for path in ["../outside.pdf", outside.to_str().unwrap(), "linked.pdf", "notes.md"] {
             assert!(
                 save_asset_copy(root, path, &version, &saved.join("refused.pdf")).is_err(),
@@ -259,11 +259,18 @@ mod tests {
 
         let folder = fixture.parent.join("folder.pdf");
         fs::create_dir(&folder).unwrap();
-        let fifo = fixture.parent.join("pipe.pdf");
-        let fifo_path = std::ffi::CString::new(fifo.as_os_str().as_encoded_bytes()).unwrap();
-        assert_eq!(unsafe { libc::mkfifo(fifo_path.as_ptr(), 0o600) }, 0);
-        for target in [&folder, &fifo] {
-            let refused = save_asset_copy(root, "paper.pdf", &version, target);
+        let targets = vec![folder];
+        #[cfg(unix)]
+        let targets = {
+            let fifo = fixture.parent.join("pipe.pdf");
+            let fifo_path = std::ffi::CString::new(fifo.as_os_str().as_encoded_bytes()).unwrap();
+            assert_eq!(unsafe { libc::mkfifo(fifo_path.as_ptr(), 0o600) }, 0);
+            let mut targets = targets;
+            targets.push(fifo);
+            targets
+        };
+        for target in targets {
+            let refused = save_asset_copy(root, "paper.pdf", &version, &target);
             assert_eq!(refused.err().unwrap(), "Choose a file to save the PDF to.", "{target:?}");
         }
 
@@ -271,7 +278,7 @@ mod tests {
         let target = fixture.parent.join("target.pdf");
         fs::write(&target, b"%PDF-1.4 old").unwrap();
         let link = fixture.parent.join("link.pdf");
-        std::os::unix::fs::symlink(&target, &link).unwrap();
+        crate::test_support::symlink(&target, &link).unwrap();
         save_asset_copy(root, "paper.pdf", &version, &link).unwrap();
         assert!(fs::symlink_metadata(&link).unwrap().file_type().is_symlink());
         assert_eq!(fs::read(&target).unwrap(), b"%PDF-1.4 the checked version");

@@ -378,8 +378,8 @@ mod tests {
     fn export_skips_dangling_links_and_link_loops() {
         let fixture = Fixture::empty("export-zip-links");
         fixture.write("a.tex", "x\n");
-        std::os::unix::fs::symlink("nowhere", fixture.path("dangling")).unwrap();
-        std::os::unix::fs::symlink(".", fixture.path("loop")).unwrap();
+        crate::test_support::symlink("nowhere", fixture.path("dangling")).unwrap();
+        crate::test_support::symlink(".", fixture.path("loop")).unwrap();
         let exports = Fixture::empty("export-zip-links-out");
         let zip_path = exports.path("paper.zip");
         export_project_zip(&fixture.root, &zip_path).unwrap();
@@ -391,7 +391,7 @@ mod tests {
         let fixture = Fixture::empty("export-zip-symlinked-out");
         fixture.write("main.tex", "x\n");
         let elsewhere = Fixture::empty("export-zip-elsewhere");
-        std::os::unix::fs::symlink(&elsewhere.root, fixture.path("out")).unwrap();
+        crate::test_support::symlink(&elsewhere.root, fixture.path("out")).unwrap();
         let zip_path = fixture.root.join("out/paper.zip");
         export_project_zip(&fixture.root, &zip_path).unwrap();
         assert_eq!(names(&zip_path), ["main.tex", "out/"]);
@@ -410,6 +410,7 @@ mod tests {
         let snapshot = import_project_zip(&zip_path, &parent.root).unwrap();
         let main = PathBuf::from(&snapshot.root).join("main.tex");
         assert_eq!(fs::read_to_string(&main).unwrap(), "ok");
+        #[cfg(unix)]
         assert_eq!(fs::metadata(&main).unwrap().permissions().mode() & 0o600, 0o600);
     }
 
@@ -436,6 +437,7 @@ mod tests {
         fixture.write("paper/main.tex", "\\documentclass{article}\n");
         fixture.write("paper/build.sh", "#!/bin/sh\n");
         let script = fixture.path("paper/build.sh");
+        #[cfg(unix)]
         fs::set_permissions(&script, fs::Permissions::from_mode(0o755)).unwrap();
         let old = SystemTime::now() - Duration::from_secs(86_400 * 30);
         File::options().write(true).open(&script).unwrap().set_modified(old).unwrap();
@@ -451,6 +453,7 @@ mod tests {
         let main = fs::read_to_string(project.join("main.tex")).unwrap();
         assert_eq!(main, "\\documentclass{article}\n");
         let script = fs::metadata(project.join("build.sh")).unwrap();
+        #[cfg(unix)]
         assert_eq!(script.permissions().mode() & 0o777, 0o755);
         let drift = script.modified().unwrap().duration_since(old).unwrap_or_default();
         assert!(drift <= Duration::from_secs(2), "{drift:?}");

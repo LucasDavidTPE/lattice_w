@@ -606,7 +606,7 @@ mod tests {
 
     #[test]
     fn symlinks_are_visible_but_never_followed() {
-        use std::os::unix::fs::symlink;
+        use crate::test_support::symlink;
         let fixture = Fixture::empty("inventory-links");
         let outside = Fixture::empty("inventory-links-outside");
         outside.write("secret", b"secret");

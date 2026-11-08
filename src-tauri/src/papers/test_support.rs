@@ -4,7 +4,9 @@ use super::bundle::PaperMetadata;
 use crate::project;
 use crate::test_support::TempDir;
 use std::fs;
-use std::path::{Path, PathBuf};
+#[cfg(unix)]
+use std::path::Path;
+use std::path::PathBuf;
 use std::sync::{Mutex, MutexGuard, PoisonError};
 use std::thread::JoinHandle;
 

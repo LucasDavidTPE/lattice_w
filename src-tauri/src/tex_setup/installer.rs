@@ -281,11 +281,11 @@ pub(crate) fn create_private_file(path: &Path) -> Result<std::fs::File, String> 
 
 /// Extract exactly `<archive_root>/`, `uv` and `uvx` into `staging`,
 /// refusing anything else the archive holds.
-#[cfg(unix)]
 pub(super) fn extract_uv_archive(
     archive_path: &Path, staging: &Path, archive_root: &str,
 ) -> Result<(), String> {
     use std::io::Write;
+    #[cfg(unix)]
     use std::os::unix::fs::PermissionsExt;
 
     let file = std::fs::File::open(archive_path)
@@ -327,6 +327,7 @@ pub(super) fn extract_uv_archive(
         std::io::copy(&mut entry, &mut output)
             .map_err(|error| format!("Could not extract {name} from the uv archive: {error}"))?;
         output.flush().map_err(|error| format!("Could not finish extracting {name}: {error}"))?;
+        #[cfg(unix)]
         std::fs::set_permissions(&destination, std::fs::Permissions::from_mode(0o755))
             .map_err(|error| format!("Could not make {name} executable: {error}"))?;
     }

@@ -401,7 +401,7 @@ mod tests {
         item.files.clear();
         assert!(save(&store, &path, item).is_err());
         fixture.write("folder/main.tex", "source");
-        std::os::unix::fs::symlink(
+        crate::test_support::symlink(
             fixture.path("folder/main.tex"),
             fixture.path("folder/link.tex"),
         )

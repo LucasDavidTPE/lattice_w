@@ -4,6 +4,9 @@ on:
   push:
     branches: [windows-upstream]
   workflow_dispatch:
+concurrency:
+  group: upstream-preparation-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -30,5 +33,5 @@ jobs:
           mkdir -p src-tauri/synara-runtime
           echo stub > src-tauri/synara-runtime/placeholder.txt
       - run: cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
-      - run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+      - run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets ${{ matrix.os == 'macos-latest' && '--all-features' || '' }} -- -D warnings
       - run: cargo test --manifest-path src-tauri/Cargo.toml

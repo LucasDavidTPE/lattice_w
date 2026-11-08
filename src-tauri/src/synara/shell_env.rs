@@ -46,7 +46,7 @@ pub(super) enum ShellError {
 
 impl ShellError {
     pub(super) fn code(self) -> &'static str {
-        match *self {
+        match self {
             #[cfg(any(unix, test))]
             Self::Timeout => "timeout",
             #[cfg(unix)]

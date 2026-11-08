@@ -178,7 +178,7 @@ impl ChangesExports {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, unix))]
 impl ChangesExports {
     fn is_current(&self, export: u64) -> bool {
         self.lock().latest == export
@@ -296,7 +296,7 @@ fn page_size() -> u64 {
     u64::try_from(size).unwrap_or(4096)
 }
 
-#[cfg(test)]
+#[cfg(all(test, unix))]
 mod tests {
     use super::*;
     use crate::test_support::TempDir;

@@ -905,7 +905,8 @@ mod tests {
         let outside = Fixture::empty("transaction-rollback-outside");
         fixture.write("first.tex", "first before");
         outside.write("second.tex", "second before");
-        std::os::unix::fs::symlink(outside.path("second.tex"), fixture.path("second.tex")).unwrap();
+        crate::test_support::symlink(outside.path("second.tex"), fixture.path("second.tex"))
+            .unwrap();
 
         let two = edits(&[("first.tex", "first after"), ("second.tex", "second after")]);
         assert!(apply_transaction(&fixture.root, "Edit two files", two).is_err());

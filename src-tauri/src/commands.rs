@@ -16,7 +16,7 @@ use std::process::{Command, Output};
 
 mod python_tools;
 
-#[cfg(test)]
+#[cfg(all(test, unix))]
 pub(crate) use python_tools::UvTool;
 pub use python_tools::{
     arxiv2md_cache_dir, prewarm_literature_tools, ARXIV2MD, ARXIV_SOURCE2MD, BIBCITE,

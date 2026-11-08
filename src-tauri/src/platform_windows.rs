@@ -169,6 +169,13 @@ fn processes() -> Vec<(u32, u32, String)> {
     result
 }
 
+pub(crate) fn child_process_name(pid: u32) -> Option<String> {
+    processes()
+        .into_iter()
+        .find(|(_, parent, name)| *parent == pid && !name.eq_ignore_ascii_case("conhost.exe"))
+        .map(|(_, _, name)| name)
+}
+
 pub(crate) fn tree_memory(pid: u32) -> u64 {
     use windows_sys::Win32::Foundation::CloseHandle;
     use windows_sys::Win32::System::ProcessStatus::{

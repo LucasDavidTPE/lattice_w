@@ -705,7 +705,7 @@ mod tests {
         assert!(error.contains("contains the current project"), "{error}");
 
         // Symbolic links are never followed, inside a folder or at the top.
-        use std::os::unix::fs::symlink;
+        use crate::test_support::symlink;
         let source =
             fixture.outside("dataset/visible.txt", "visible").parent().unwrap().to_path_buf();
         let secret = fixture.outside("outside/secret.txt", "secret");

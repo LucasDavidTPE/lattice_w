@@ -352,7 +352,7 @@ mod tests {
         // Outside the project, through a link, or not a PDF.
         let outside = fixture.root.parent().unwrap().join("outside.pdf");
         fs::write(&outside, b"%PDF-1.4 outside").unwrap();
-        std::os::unix::fs::symlink(&outside, fixture.path("linked.pdf")).unwrap();
+        crate::test_support::symlink(&outside, fixture.path("linked.pdf")).unwrap();
         for path in ["../outside.pdf", outside.to_str().unwrap(), "linked.pdf", "notes.md", "", "."]
         {
             assert!(read(path, &version, 0, 4).is_err(), "{path} must be refused");
@@ -382,6 +382,7 @@ mod tests {
         assert_eq!(read_asset(root, "gone/paper.pdf").err().unwrap(), NOT_FOUND);
     }
 
+    #[cfg(unix)]
     #[test]
     fn a_pdf_swapped_for_a_pipe_is_refused_without_waiting_for_a_writer() {
         let fixture = Fixture::project("pdf-fifo");

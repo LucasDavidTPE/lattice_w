@@ -23,7 +23,7 @@ pub(crate) struct Session {
     window: String,
     root: PathBuf,
     name: String,
-    pid: Option<u32>,
+    pub(super) pid: Option<u32>,
     job: Arc<crate::platform_windows::ProcessJob>,
     master: Arc<Mutex<Option<Box<dyn MasterPty + Send>>>>,
     input: mpsc::Sender<Vec<u8>>,

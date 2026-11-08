@@ -46,6 +46,8 @@ export const SETUP_HOST_ERRORS: readonly HostErrorEntry[] = [
   ["tex_setup/fetch.rs", "The {name} download was interrupted: {error}", ([what, error]) => t`The ${what} download was interrupted: ${error}`],
   ["tex_setup/fetch.rs", "The downloaded {} failed its security check.", ([what]) => t`The downloaded ${what} failed its security check.`],
   // Elsewhere one-click install is not built yet (tex_setup/stub.rs).
+  ["tex_setup/stub.rs", "Install TeX Live for Windows (https://tug.org/texlive/windows.html), then restart Lattice.", () => t`Install TeX Live for Windows (https://tug.org/texlive/windows.html), then restart Lattice.`],
+  ["tex_setup/stub.rs", "Install the missing package with TeX Live Manager or MiKTeX Console, then build again.", () => t`Install the missing package with TeX Live Manager or MiKTeX Console, then build again.`],
   ["tex_setup/stub.rs", "One-click TeX install is not available on Linux yet.", () => t`One-click TeX install is not available on Linux yet.`],
   ["tex_setup/stub.rs", "One-click TeX package install is not available on Linux yet.", () => t`One-click TeX package install is not available on Linux yet.`],
   ["tex_setup/macos.rs", "Could not request permission to install {name}: {error}", ([what, error]) => t`Could not request permission to install ${what}: ${error}`],
