@@ -288,7 +288,7 @@ fn searchable_stamps_under(root: &Path, relative: &Path) -> IndexResult<HashMap<
             continue;
         }
         let relative = entry.path().strip_prefix(root).map_err(IndexError::other)?;
-        let relative = relative.to_string_lossy().to_string();
+        let relative = relative.to_string_lossy().replace('\\', "/");
         if project::searchable_text_path(&relative) {
             if let Ok(metadata) = fs::metadata(root.join(&relative)) {
                 stamps.insert(relative, file_stamp(&metadata));
@@ -334,7 +334,7 @@ fn update_path(conn: &Connection, root: &Path, relative: &Path) -> IndexResult<(
                 return sync_stamps(conn, root, current, Some(relative));
             }
             delete_prefix(conn, relative)?;
-            let relative = relative.to_string_lossy();
+            let relative = relative.to_string_lossy().replace('\\', "/");
             if metadata.is_file() && project::searchable_text_path(&relative) {
                 index_file(conn, root, &relative)?;
             }
@@ -387,12 +387,12 @@ fn delete_file(conn: &Connection, relative: &str) -> IndexResult<()> {
 
 /// Remove `prefix` and everything beneath it.
 fn delete_prefix(conn: &Connection, prefix: &Path) -> IndexResult<()> {
-    let prefix = prefix.to_string_lossy();
-    let descendants = format!("{}{}", prefix, std::path::MAIN_SEPARATOR);
+    let prefix = prefix.to_string_lossy().replace('\\', "/");
+    let descendants = format!("{prefix}/");
     for table in INDEX_TABLES {
         conn.execute(
             &format!("DELETE FROM {table} WHERE path = ?1 OR substr(path, 1, length(?2)) = ?2"),
-            params![prefix.as_ref(), descendants],
+            params![prefix, descendants],
         )?;
     }
     Ok(())

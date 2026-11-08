@@ -51,6 +51,13 @@ mod tests {
     #[test]
     fn sidecars_run_on_the_standalone_node() {
         let runtime = NodeRuntime::resolve(Path::new("/resources/synara-runtime/bin"));
-        assert_eq!(runtime.executable, Path::new("/resources/synara-runtime/bin/node"));
+        assert_eq!(
+            runtime.executable,
+            Path::new("/resources/synara-runtime/bin").join(if cfg!(windows) {
+                "node.exe"
+            } else {
+                "node"
+            })
+        );
     }
 }

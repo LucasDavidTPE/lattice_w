@@ -722,7 +722,8 @@ mod tests {
 
     #[test]
     fn maps_uris_completion_and_definition_payloads() {
-        let uri = path_to_uri(Path::new("/tmp/my paper/main.tex"));
+        let root = crate::test_support::TempDir::new("texlab-uri");
+        let uri = path_to_uri(&root.join("my paper/main.tex"));
         assert!(uri.starts_with("file:///") && uri.ends_with("/my%20paper/main.tex"), "{uri}");
 
         let completions = map_completions(Some(&json!([

@@ -308,7 +308,7 @@ fn scan_directory(root: &Path, directory: &Path, view: TreeView) -> Result<Vec<F
         let entry = entry.map_err(err)?;
         let path = entry.path();
         let name = entry.file_name().to_string_lossy().to_string();
-        let relative = path.strip_prefix(root).map_err(err)?.to_string_lossy().to_string();
+        let relative = path.strip_prefix(root).map_err(err)?.to_string_lossy().replace('\\', "/");
         let excluded = if view == TreeView::Inventory {
             exclusion_reason(Path::new(&relative), &name, &path)
         } else {

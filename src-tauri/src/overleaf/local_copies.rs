@@ -88,10 +88,10 @@ pub fn remember_local_copy(config_dir: &Path, root: &Path) {
 }
 
 fn display_path(path: &Path) -> String {
-    let shown = path.to_string_lossy();
+    let shown = path.to_string_lossy().replace('\\', "/");
     match crate::host_paths::home_dir() {
         Some(home) => crate::host_paths::redact_home(&shown, &home.to_string_lossy()),
-        None => shown.into_owned(),
+        None => shown,
     }
 }
 

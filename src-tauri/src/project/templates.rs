@@ -100,7 +100,7 @@ fn source_files(source: &Path) -> Result<BTreeMap<String, Vec<u8>>, String> {
                 .map_err(err)?
                 .to_str()
                 .ok_or("Template paths must be UTF-8.")?
-                .to_string();
+                .replace('\\', "/");
             if allowed(&name) {
                 let path = paths::safe_path(source, &name)?;
                 add(name, &mut fs::File::open(path).map_err(err)?)?;
