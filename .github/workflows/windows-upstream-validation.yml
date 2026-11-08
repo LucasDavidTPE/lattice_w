@@ -1,4 +1,4 @@
-# Fork-only verification harness, removed before proposing the upstream branch.
+# Fork-only native verification; absent from the upstream proposal.
 name: Windows upstream preparation
 on:
   push:
@@ -21,7 +21,6 @@ jobs:
       CARGO_PROFILE_TEST_DEBUG: '0'
     steps:
       - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup-pnpm
       - run: rustup toolchain install
       - uses: Swatinem/rust-cache@v2
         with:
@@ -33,49 +32,7 @@ jobs:
           mkdir -p src-tauri/synara-runtime
           echo stub > src-tauri/synara-runtime/placeholder.txt
       - run: cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
-      - run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets ${{ matrix.os == 'macos-latest' && '--all-features' || '' }} -- -D warnings
+      - run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+      - if: matrix.os == 'macos-latest'
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings
       - run: cargo test --manifest-path src-tauri/Cargo.toml
-
-      - name: Diagnose Windows test loader
-        if: failure() && matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          $exe = Get-ChildItem src-tauri/target/debug/deps/research_writer_lib-*.exe | Select-Object -First 1
-          if (!$exe) { exit 0 }
-          $dump = Get-ChildItem 'C:/Program Files/Microsoft Visual Studio/*/*/VC/Tools/MSVC/*/bin/Hostx64/x64/dumpbin.exe' | Sort-Object FullName -Descending | Select-Object -First 1
-          if (!$dump) { throw 'MSVC dumpbin missing' }
-          $imports = & $dump.FullName /imports $exe.FullName
-          Add-Type @'
-          using System;
-          using System.Text;
-          using System.Runtime.InteropServices;
-          public static class LoaderCheck {
-            [DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)] public static extern IntPtr LoadLibraryW(string name);
-            [DllImport("kernel32.dll", CharSet=CharSet.Ansi, SetLastError=true)] public static extern IntPtr GetProcAddress(IntPtr module, string name);
-            [DllImport("kernel32.dll", CharSet=CharSet.Unicode)] public static extern bool SetDllDirectoryW(string path);
-            [DllImport("kernel32.dll", CharSet=CharSet.Unicode)] public static extern uint GetModuleFileNameW(IntPtr module, StringBuilder path, int size);
-          }
-          '@
-          [LoaderCheck]::SetDllDirectoryW($exe.DirectoryName) | Out-Null
-          $module = [IntPtr]::Zero
-          foreach ($line in $imports) {
-            if ($line -match '^\s+([^\s:]+\.dll)\s*$') {
-              $dll = $Matches[1]
-              $module = [LoaderCheck]::LoadLibraryW($dll)
-              if ($module -eq [IntPtr]::Zero) { Write-Output "LOAD FAILED $dll error=$([Runtime.InteropServices.Marshal]::GetLastWin32Error())" }
-              else {
-                $path = [Text.StringBuilder]::new(2048)
-                [LoaderCheck]::GetModuleFileNameW($module, $path, 2048) | Out-Null
-                Write-Output "DLL $dll => $path"
-              }
-            } elseif ($module -ne [IntPtr]::Zero -and $line -match '^\s+[0-9A-Fa-f]+\s+([?A-Za-z_][^\s]*)\s*$') {
-              $function = $Matches[1]
-              if ([LoaderCheck]::GetProcAddress($module, $function) -eq [IntPtr]::Zero) { Write-Output "MISSING EXPORT $dll : $function" }
-            }
-          }
-          $imports | Set-Content "$env:RUNNER_TEMP/test-imports.txt"
-      - uses: actions/upload-artifact@v4
-        if: failure() && matrix.os == 'windows-latest'
-        with:
-          name: windows-test-imports
-          path: ${{ runner.temp }}/test-imports.txt
