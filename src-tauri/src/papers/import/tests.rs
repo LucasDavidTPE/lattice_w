@@ -277,6 +277,7 @@ fn a_committed_citation_survives_a_failed_or_cancelled_full_text_download() {
 
 /// A complete one-page PDF, with asymmetric title/body and enough text to
 /// distinguish successful conversion from an empty placeholder.
+#[cfg(unix)]
 fn one_page_pdf() -> Vec<u8> {
     let stream = format!(
         "BT /F1 22 Tf 50 750 Td (Direct PDF Study) Tj /F1 12 Tf {} ET",

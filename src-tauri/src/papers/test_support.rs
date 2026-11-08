@@ -7,6 +7,7 @@ use std::fs;
 #[cfg(unix)]
 use std::path::Path;
 use std::path::PathBuf;
+#[cfg(unix)]
 use std::sync::{Mutex, MutexGuard, PoisonError};
 use std::thread::JoinHandle;
 
@@ -14,7 +15,10 @@ use std::thread::JoinHandle;
 /// parent directory doubles as a place for fixture tools.
 pub(super) struct TestProject {
     pub(super) root: PathBuf,
+    #[cfg(unix)]
     pub(super) parent: TempDir,
+    #[cfg(windows)]
+    _parent: TempDir,
 }
 
 impl TestProject {
@@ -22,7 +26,13 @@ impl TestProject {
         let parent = TempDir::new("papers");
         let root = project::create(&parent, "paper").unwrap();
         fs::write(root.join("references.bib"), bibliography).unwrap();
-        Self { root, parent }
+        Self {
+            root,
+            #[cfg(unix)]
+            parent,
+            #[cfg(windows)]
+            _parent: parent,
+        }
     }
 
     /// Write a project file, creating its directories; returns its path.
@@ -54,8 +64,10 @@ impl TestProject {
 /// the tests that invoke bibcite with the ones that replace it with a fixture
 /// binary, or parallel test execution can edit an unrelated bibliography
 /// through a fixture's deliberately narrow CLI contract.
+#[cfg(unix)]
 static TOOL_OVERRIDE_LOCK: Mutex<()> = Mutex::new(());
 
+#[cfg(unix)]
 pub(super) fn tool_lock() -> MutexGuard<'static, ()> {
     TOOL_OVERRIDE_LOCK.lock().unwrap_or_else(PoisonError::into_inner)
 }
